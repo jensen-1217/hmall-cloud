@@ -24,3 +24,9 @@ logging:
     cn.itcast.feign.client: debug
   pattern:
     dateformat: HH:mm:ss:SSS
+xxljob:
+  admin-address: http://192.168.200.130:8888/xxl-job-admin
+  executor-name: hmall-order-executor
+  executor-port: 9991
+  log-path: C:/xxljob/logs
+  # executor-address: http://192.168.200.1:9991

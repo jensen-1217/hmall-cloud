@@ -2,7 +2,6 @@ package cn.itcast.search.controller;
 import cn.itcast.feign.client.ItemClient;
 import cn.itcast.hmall.dto.common.PageDTO;
 import cn.itcast.hmall.dto.common.ResultDTO;
-import cn.itcast.hmall.dto.search.RequestParams;
 import cn.itcast.hmall.dto.search.SearchReqDTO;
 import cn.itcast.hmall.pojo.item.Item;
 import cn.itcast.hmall.pojo.item.ItemDoc;

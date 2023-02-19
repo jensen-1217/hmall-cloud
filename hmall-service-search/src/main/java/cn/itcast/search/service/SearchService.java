@@ -2,7 +2,6 @@ package cn.itcast.search.service;
 
 
 import cn.itcast.hmall.dto.common.PageDTO;
-import cn.itcast.hmall.dto.search.RequestParams;
 import cn.itcast.hmall.dto.search.SearchReqDTO;
 import cn.itcast.hmall.pojo.item.ItemDoc;
 

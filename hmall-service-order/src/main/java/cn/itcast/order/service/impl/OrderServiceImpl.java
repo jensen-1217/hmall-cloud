@@ -5,7 +5,6 @@ import cn.itcast.feign.client.UserClient;
 import cn.itcast.hmall.dto.common.ResultDTO;
 import cn.itcast.hmall.dto.common.ThreadLocalUtil;
 import cn.itcast.hmall.dto.order.OrderReqDTO;
-import cn.itcast.hmall.dto.order.RequestParams;
 import cn.itcast.hmall.pojo.item.Item;
 import cn.itcast.hmall.pojo.order.Order;
 import cn.itcast.hmall.pojo.order.OrderDetail;

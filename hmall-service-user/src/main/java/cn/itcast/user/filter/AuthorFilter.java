@@ -19,8 +19,10 @@ public class AuthorFilter extends GenericFilter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
+        // 获取从网关传递过来的登录用户id
         String authorization = request.getHeader("authorization");
         if(StringUtils.isNotBlank(authorization)){
+            // 如果用户id不为空  设置到ThreadLocal中
             ThreadLocalUtil.setUserId(Long.valueOf(authorization));
         }
         filterChain.doFilter(servletRequest,servletResponse);

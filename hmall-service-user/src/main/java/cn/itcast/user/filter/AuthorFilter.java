@@ -1,12 +1,16 @@
 package cn.itcast.user.filter;
 
 import cn.itcast.hmall.dto.common.ThreadLocalUtil;
-import org.apache.commons.lang.StringUtils;
+import com.alibaba.cloud.commons.lang.StringUtils;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+//import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.*;
+//import javax.servlet.annotation.WebFilter;
+//import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
@@ -17,7 +21,7 @@ import java.io.IOException;
 @WebFilter(filterName = "authorFilter",urlPatterns = "/*")
 public class AuthorFilter extends GenericFilter {
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         // 获取从网关传递过来的登录用户id
         String authorization = request.getHeader("authorization");

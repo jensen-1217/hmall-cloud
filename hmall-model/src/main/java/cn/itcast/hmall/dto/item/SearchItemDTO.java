@@ -19,6 +19,7 @@ public class SearchItemDTO {
     private String name;
     private Date beginDate;
     private Date endDate;
+    private Date[] dateRange;
     private String brand;
     private String category;
 }

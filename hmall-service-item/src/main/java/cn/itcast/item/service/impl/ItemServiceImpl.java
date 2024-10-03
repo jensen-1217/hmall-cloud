@@ -39,7 +39,9 @@ public class ItemServiceImpl  extends ServiceImpl<ItemMapper, Item> implements I
 //        wrapper.like(StringUtils.isNotBlank(dto.getName()), Item::getName, dto.getName());
 //        wrapper.ge(dto.getBeginDate() != null, Item::getCreateTime, dto.getBeginDate());
 //        wrapper.le(dto.getEndDate() != null, Item::getCreateTime, dto.getEndDate());
-
+        //构建分页对象：以下两行是分页例子
+//        IPage<User> page=new Page<>(2,3);
+//        userService.page(page,wrapper);
 
         Page<Item> result = this.page(new Page<>(dto.getPage(), dto.getSize()),wrapper);
         return new PageDTO<>(result.getTotal(), result.getRecords());

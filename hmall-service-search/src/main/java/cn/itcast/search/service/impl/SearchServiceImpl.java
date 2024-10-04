@@ -39,7 +39,7 @@ public class SearchServiceImpl implements SearchService {
             SearchItemDTO searchItemDTO = SearchItemDTO.builder().page(page).size(size).build();
             //通过feign调用item-service,分页查询商品
             PageDTO<Item> pageDTO = itemClient.list(searchItemDTO);
-            //获取分页查询列表
+            //获取分页查询商品列表
             List<Item> pageDTOList = pageDTO.getList();
             // 如果列表为空，退出循环
             if (pageDTOList==null|| pageDTOList.isEmpty()){
@@ -63,7 +63,7 @@ public class SearchServiceImpl implements SearchService {
             BulkRequest bulkRequest = BulkRequest.of(br -> br.operations(bulkOperations));
             // 发送 BulkRequest 请求
             try {
-                BulkResponse bulkResponse = client.bulk(bulkRequest);
+                client.bulk(bulkRequest);
             } catch (IOException e) {
                 e.printStackTrace();
             }

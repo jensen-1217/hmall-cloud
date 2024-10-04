@@ -26,7 +26,7 @@ public class EsConfig {
     @Bean
     public ElasticsearchClient restHighLevelClient(){
         RestClient restClient = RestClient.builder(
-                new HttpHost("192.168.93.132", 9200)
+                new HttpHost(host, port)
         ).build();
         // 创建一个 Transport 和 JacksonJsonpMapper 序列化实例
         RestClientTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());

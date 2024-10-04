@@ -1,6 +1,7 @@
 package cn.itcast.hmall.dto.item;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.util.Date;
  * @author mrchen
  * @date 2022/5/30 15:14
  */
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

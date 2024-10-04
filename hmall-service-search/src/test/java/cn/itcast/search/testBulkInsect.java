@@ -15,6 +15,9 @@ public class testBulkInsect {
     @Autowired
     private SearchService searchService;
 
+    /**
+     * 全量数据导入
+     */
     @Test
     public void bulkTest(){
         searchService.bulkInsect();

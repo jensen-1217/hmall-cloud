@@ -22,4 +22,12 @@ public class SearchItemDTO {
     private Date[] dateRange;
     private String brand;
     private String category;
+
+    public void setDateRange(Date[] dateRange) {
+        this.dateRange = dateRange;
+        if (dateRange != null && dateRange.length == 2) {
+            this.beginDate = dateRange[0];
+            this.endDate = dateRange[1];
+        }
+    }
 }

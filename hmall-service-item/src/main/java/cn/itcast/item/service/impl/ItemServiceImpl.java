@@ -87,4 +87,10 @@ public class ItemServiceImpl  extends ServiceImpl<ItemMapper, Item> implements I
             throw new RuntimeException("更新失败");
         }
     }
+
+    //修改
+    @Override
+    public void updateOne(Item item) {
+        this.updateById(item);
+    }
 }

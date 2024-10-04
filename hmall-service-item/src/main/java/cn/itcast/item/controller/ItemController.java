@@ -71,4 +71,21 @@ public class ItemController {
             return ResultDTO.error("修改上下架状态失败,原因:" + e.getMessage());
         }
     }
+
+    /**
+     * 修改商品信息
+     * @param item
+     * @return
+     */
+    @PutMapping
+    public ResultDTO update(@RequestBody Item item){
+        log.info("ItemController update   请求参数: {}", item);
+        try {
+            itemService.updateOne(item);
+            return ResultDTO.ok();
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResultDTO.error("修改商品失败,原因:" + e.getMessage());
+        }
+    }
 }

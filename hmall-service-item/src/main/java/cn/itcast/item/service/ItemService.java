@@ -39,4 +39,11 @@ public interface ItemService extends IService<Item> {
      * @return 返回成功或失败信息
      */
     void updateStatus(Long id, Integer status);
+
+    /**
+     * 修改商品信息
+     * @param item
+     * @return
+     */
+    void updateOne(Item item);
 }

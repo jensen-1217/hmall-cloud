@@ -46,4 +46,23 @@ public class ItemServiceImpl  extends ServiceImpl<ItemMapper, Item> implements I
         Page<Item> result = this.page(new Page<>(dto.getPage(), dto.getSize()),wrapper);
         return new PageDTO<>(result.getTotal(), result.getRecords());
     }
+
+    //根据Id查询
+    @Override
+    public Item selectById(Long id) {
+        if (id==null){
+            throw new RuntimeException("id不能为空");
+        }
+        return this.getById(id);
+    }
+
+    //添加
+    @Override
+    public void add(Item item) {
+        item.setStatus(1);
+        boolean save = this.save(item);
+        if (!save){
+            throw new RuntimeException("保存失败");
+        }
+    }
 }

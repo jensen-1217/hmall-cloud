@@ -1,11 +1,15 @@
 package cn.itcast.hmall.pojo.item;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Date;
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @TableName("tb_item")
 public class Item {
     @TableId(type = IdType.AUTO)
@@ -22,7 +26,11 @@ public class Item {
     private Integer status;//商品状态 1-正常，2-下架
     @TableField("isAD")
     private Boolean isAD;//商品状态 1-正常，2-下架
+    //指定插入时自动填充的字段
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
     private Date createTime;//创建时间
+    //自定插入或者更新时自动填充的字段
+    @TableField(value = "update_time",fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;//更新时间
 
 

@@ -58,9 +58,9 @@ public class ItemController {
      * 商品上架、下架
      * @param id 商品id
      * @param status 状态：1上架；2下架
-     * @return 返回信息
+     * @return 返回成功或失败信息
      */
-    @PutMapping("/{id}/{status}")
+    @PutMapping("/status/{id}/{status}")
     public ResultDTO updateStatus(@PathVariable("id") Long id,@PathVariable("status") Integer status){
         log.info("ItemController updateStatus   请求参数: {} {}", id, status);
         try {

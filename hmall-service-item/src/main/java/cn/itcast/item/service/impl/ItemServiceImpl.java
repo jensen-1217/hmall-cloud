@@ -7,6 +7,7 @@ import cn.itcast.item.mapper.ItemMapper;
 import cn.itcast.item.service.ItemService;
 import com.alibaba.cloud.commons.lang.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -63,6 +64,27 @@ public class ItemServiceImpl  extends ServiceImpl<ItemMapper, Item> implements I
         boolean save = this.save(item);
         if (!save){
             throw new RuntimeException("保存失败");
+        }
+    }
+
+    //上下架
+    @Override
+    public void updateStatus(Long id, Integer status) {
+        if (id==null||status==null){
+            throw new RuntimeException("id不能为空或状态出错");
+        }
+        if (status !=2&& status!=1){
+            throw new RuntimeException("状态错误");
+        }
+//        Item item = getById(id);
+//        item.setStatus(status);
+//        boolean b = this.updateById(item);
+        UpdateWrapper<Item> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",id)
+                .set("status",status);
+        boolean b = update(null, updateWrapper);
+        if (!b){
+            throw new RuntimeException("更新失败");
         }
     }
 }

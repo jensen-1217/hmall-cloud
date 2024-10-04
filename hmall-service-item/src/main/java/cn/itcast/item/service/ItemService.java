@@ -31,4 +31,12 @@ public interface ItemService extends IService<Item> {
      * @return
      */
     void add(Item item);
+
+    /**
+     * 商品上架、下架
+     * @param id 商品id
+     * @param status 状态：1上架；2下架
+     * @return 返回成功或失败信息
+     */
+    void updateStatus(Long id, Integer status);
 }

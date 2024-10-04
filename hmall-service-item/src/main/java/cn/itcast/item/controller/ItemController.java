@@ -88,4 +88,22 @@ public class ItemController {
             return ResultDTO.error("修改商品失败,原因:" + e.getMessage());
         }
     }
+
+    /**
+     * 根据id删除商品
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/{id}")
+    public ResultDTO delete(@PathVariable("id") Long id){
+        log.info("ItemController deleteOne   请求参数: {}", id);
+        try {
+            itemService.deleteOne(id);
+            return ResultDTO.ok();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultDTO.error("删除商品失败,原因:" + e.getMessage());
+        }
+
+    }
 }

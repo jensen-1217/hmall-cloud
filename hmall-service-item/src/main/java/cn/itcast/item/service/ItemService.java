@@ -46,4 +46,11 @@ public interface ItemService extends IService<Item> {
      * @return
      */
     void updateOne(Item item);
+
+    /**
+     * 根据id删除商品
+     * @param id
+     * @return
+     */
+    void deleteOne(Long id);
 }

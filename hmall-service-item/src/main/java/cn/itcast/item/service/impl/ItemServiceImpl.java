@@ -93,4 +93,10 @@ public class ItemServiceImpl  extends ServiceImpl<ItemMapper, Item> implements I
     public void updateOne(Item item) {
         this.updateById(item);
     }
+
+    //删除
+    @Override
+    public void deleteOne(Long id) {
+        this.removeById(id);
+    }
 }

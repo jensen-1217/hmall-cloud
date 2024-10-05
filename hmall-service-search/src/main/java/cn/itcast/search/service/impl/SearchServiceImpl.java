@@ -8,6 +8,7 @@ import cn.itcast.hmall.pojo.item.Item;
 import cn.itcast.hmall.pojo.item.ItemDoc;
 import cn.itcast.search.service.SearchService;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
@@ -20,6 +21,8 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.elasticsearch.core.search.Suggester;
 import co.elastic.clients.json.JsonData;
 import com.alibaba.cloud.commons.lang.StringUtils;
@@ -152,6 +155,21 @@ public class SearchServiceImpl implements SearchService {
             throw new RuntimeException(e);
         }
     }
+    //实现基本搜索功能
+    @Override
+    public PageDTO<ItemDoc> getList(SearchReqDTO params) {
+        try {
+            // 1.准备Request
+            SearchRequest.Builder request = new SearchRequest.Builder().index("item");
+            //2.准备DSL
+            buildBasicQuery(params, request);
+            //3.发送请求
+            SearchResponse<ItemDoc> search = client.search(request.build(), ItemDoc.class);
+            return handleResponse(search);
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
+    }
 
     //准备DSL
     private void buildBasicQuery(SearchReqDTO params, SearchRequest.Builder request) {
@@ -235,5 +253,28 @@ public class SearchServiceImpl implements SearchService {
             brandList.add(bucket.key().stringValue());
         });
         return brandList;
+    }
+    //处理响应结果
+    private PageDTO<ItemDoc> handleResponse(SearchResponse response) {
+        HitsMetadata<ItemDoc> searchHits = response.hits();
+        // 4.1.总条数
+        long total = searchHits.total().value();
+        // 4.2.获取文档数组
+        List<Hit<ItemDoc>> hits = searchHits.hits();
+        List<ItemDoc> itemDocs = new ArrayList<>(hits.size());
+        // 4.3.遍历
+        hits.forEach(hit -> {
+            // 获取文档source
+            ItemDoc itemDoc = hit.source();
+            // 检查高亮字段是否存在
+            if (hit.highlight() != null && hit.highlight().containsKey("name")) {
+                String name = hit.highlight().get("name").get(0); // 获取高亮结果
+                itemDoc.setName(name); // 设置高亮结果
+            }
+            // 4.9.放入集合
+            itemDocs.add(itemDoc);
+
+        });
+        return new PageDTO<ItemDoc>(total, itemDocs);
     }
 }

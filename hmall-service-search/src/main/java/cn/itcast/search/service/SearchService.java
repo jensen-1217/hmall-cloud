@@ -1,7 +1,9 @@
 package cn.itcast.search.service;
 
 
+import cn.itcast.hmall.dto.common.PageDTO;
 import cn.itcast.hmall.dto.search.SearchReqDTO;
+import cn.itcast.hmall.pojo.item.ItemDoc;
 
 import java.util.List;
 import java.util.Map;
@@ -18,4 +20,6 @@ public interface SearchService {
     List<String> getSuggestion(String key);
     //过滤项聚合功能
     Map<String, List<String>> getFilters(SearchReqDTO params);
+    //实现基本搜索功能
+    PageDTO<ItemDoc> getList(SearchReqDTO params);
 }

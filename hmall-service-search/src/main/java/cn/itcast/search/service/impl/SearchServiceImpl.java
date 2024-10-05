@@ -3,10 +3,17 @@ package cn.itcast.search.service.impl;
 import cn.itcast.feign.client.ItemClient;
 import cn.itcast.hmall.dto.common.PageDTO;
 import cn.itcast.hmall.dto.item.SearchItemDTO;
+import cn.itcast.hmall.dto.search.SearchReqDTO;
 import cn.itcast.hmall.pojo.item.Item;
 import cn.itcast.hmall.pojo.item.ItemDoc;
 import cn.itcast.search.service.SearchService;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.FunctionBoostMode;
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchAllQuery;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -14,13 +21,17 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
 import co.elastic.clients.elasticsearch.core.search.Suggester;
+import co.elastic.clients.json.JsonData;
+import com.alibaba.cloud.commons.lang.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jensen
@@ -104,7 +115,7 @@ public class SearchServiceImpl implements SearchService {
             List<CompletionSuggestOption<ItemDoc>> options = response.suggest().get("suggestions").get(0).completion().options();
             // 4.3.遍历
             List<String> list = new ArrayList<>(options.size());
-            options.forEach(option->{
+            options.forEach(option -> {
                 String text = option.text();
                 list.add(text);
             });
@@ -113,5 +124,116 @@ public class SearchServiceImpl implements SearchService {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    //过滤项聚合功能
+    @Override
+    public Map<String, List<String>> getFilters(SearchReqDTO params) {
+        try {
+            // 1.准备Request
+            SearchRequest.Builder request = new SearchRequest.Builder().index("item");
+            //2.准备DSL
+            buildBasicQuery(params, request);
+            //3.聚合
+            buildAggregation(request);
+            //4.发送请求
+            SearchResponse<ItemDoc> search = client.search(request.build(), ItemDoc.class);
+            // 4.解析结果
+            Map<String, List<String>> result = new HashMap<>();
+            Map<String, Aggregate> aggregations = search.aggregations();
+            // 4.1.根据品牌名称，获取品牌结果
+            List<String> brandList = getAggByName(aggregations, "brandAgg");
+            result.put("brand", brandList);
+            // 4.2.根据分类名称，获取分类结果
+            List<String> categoryList = getAggByName(aggregations, "categoryAgg");
+            result.put("category", categoryList);
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //准备DSL
+    private void buildBasicQuery(SearchReqDTO params, SearchRequest.Builder request) {
+        // 1. 准备Boolean查询
+        String key = params.getKey();
+        BoolQuery.Builder boolQuery = new BoolQuery.Builder();
+        if (StringUtils.isNotBlank(key)) {
+            boolQuery.must(m -> m.match(match -> match.field("all").query(key)));
+        } else {
+            boolQuery.must(m -> m.matchAll(MatchAllQuery.of(match -> match)));
+        }
+        // 1.2. 品牌
+        String brand = params.getBrand();
+        if (StringUtils.isNotBlank(brand)) {
+            boolQuery.filter(f -> f.term(t -> t.field("brand").value(brand)));
+        }
+        // 1.3. 分类
+        String category = params.getCategory();
+        if (StringUtils.isNotBlank(category)) {
+            boolQuery.filter(f -> f.term(t -> t.field("category").value(category)));
+        }
+        // 1.5. 价格范围
+        Double minPrice = params.getMinPrice();
+        Double maxPrice = params.getMaxPrice();
+        if (minPrice != null && maxPrice != null) {
+            maxPrice = maxPrice == 0 ? Double.MAX_VALUE : maxPrice;
+            Double finalMaxPrice = maxPrice;
+            boolQuery.filter(f -> f.range(r -> r.field("price").gte(JsonData.of(minPrice * 100)).lte(JsonData.of(finalMaxPrice * 100))));
+        }
+        // 2. 算分函数查询
+        //算分查询  判断isAD是否为true，为true及进行加分 没有设置方法就是相乘 乘以10  当有其他排序的时候，得分算法就会失效，
+        request.query(q -> q.functionScore(fs -> fs
+                .query(b -> b.bool(boolQuery.build())) // 直接传入构建的布尔查询
+                .functions(fn -> fn
+                        .filter(f -> f.term(t -> t.field("isAD").value(true))) // 过滤条件
+                        .weight(10.0) // 算分函数
+                )
+                .boostMode(FunctionBoostMode.Multiply) // 设定boost模式
+        ));
+        //判断页码是否为空
+        int page = 1;
+        int size = 10;
+        if (params.getPage() != null && params.getSize() != null) {
+            page = params.getPage();
+            size = params.getSize();
+        }
+        //设置分页
+        request.from((page - 1) * size).size(size);
+        //判断是否按照价钱排序
+        if (params.getSortBy().equals("price")) {
+            request.sort(sort -> sort.field(f -> f.field("price").order(SortOrder.Asc)))
+                    .sort(sort -> sort.field(f -> f.field("sold").order(SortOrder.Desc)));
+        }
+        //判断是否按照评分排序
+        if (params.getSortBy().equals("sold")) {
+            request.sort(sort -> sort.field(f -> f.field("sold").order(SortOrder.Desc)))
+                    .sort(sort -> sort.field(f -> f.field("price").order(SortOrder.Asc)));
+        }
+    }
+
+    //聚合
+    private void buildAggregation(SearchRequest.Builder request) {
+        request.aggregations("brandAgg", a -> a
+                .terms(h -> h.
+                        field("brand")
+                        .size(20)));
+        request.aggregations("categoryAgg", a -> a
+                .terms(h -> h.
+                        field("category")
+                        .size(20)));
+    }
+    //获取结果
+    private List<String> getAggByName(Map<String, Aggregate> aggregations, String starAgg) {
+        // 4.1.根据聚合名称获取聚合结果
+        // 4.2.获取buckets
+        List<StringTermsBucket> brandTerms = aggregations.get(starAgg).sterms().buckets().array();
+        ArrayList<String> brandList = new ArrayList<>();
+        // 4.3.遍历
+        brandTerms.forEach(bucket -> {
+            // 4.4.获取key
+            brandList.add(bucket.key().stringValue());
+        });
+        return brandList;
     }
 }

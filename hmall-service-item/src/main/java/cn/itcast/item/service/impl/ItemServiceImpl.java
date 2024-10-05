@@ -1,5 +1,6 @@
 package cn.itcast.item.service.impl;
 
+import cn.itcast.hmall.constants.MqConstants;
 import cn.itcast.hmall.dto.common.PageDTO;
 import cn.itcast.hmall.dto.item.SearchItemDTO;
 import cn.itcast.hmall.pojo.item.Item;
@@ -11,6 +12,8 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class ItemServiceImpl  extends ServiceImpl<ItemMapper, Item> implements ItemService{
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     //分页查询商品
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -85,6 +90,13 @@ public class ItemServiceImpl  extends ServiceImpl<ItemMapper, Item> implements I
         boolean b = update(null, updateWrapper);
         if (!b){
             throw new RuntimeException("更新失败");
+        }
+        if (status==2){
+            // 发下架消息
+            rabbitTemplate.convertAndSend(MqConstants.ITEM_EXCHANGE,MqConstants.ITEM_DELETE_KEY,id);
+        }else {
+            // 发上架消息
+            rabbitTemplate.convertAndSend(MqConstants.ITEM_EXCHANGE,MqConstants.ITEM_INSERT_KEY,id);
         }
     }
 

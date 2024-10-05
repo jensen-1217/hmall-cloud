@@ -9,16 +9,14 @@ import cn.itcast.hmall.pojo.item.ItemDoc;
 import cn.itcast.search.service.SearchService;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.Result;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.FunctionBoostMode;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchAllQuery;
-import co.elastic.clients.elasticsearch.core.BulkRequest;
-import co.elastic.clients.elasticsearch.core.BulkResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -155,6 +153,7 @@ public class SearchServiceImpl implements SearchService {
             throw new RuntimeException(e);
         }
     }
+
     //实现基本搜索功能
     @Override
     public PageDTO<ItemDoc> getList(SearchReqDTO params) {
@@ -166,7 +165,43 @@ public class SearchServiceImpl implements SearchService {
             //3.发送请求
             SearchResponse<ItemDoc> search = client.search(request.build(), ItemDoc.class);
             return handleResponse(search);
-        }catch (IOException e){
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //添加
+    @Override
+    public void insertById(Long id) {
+        try {
+            // 0.通过feign调用item-service根据id查询商品数据
+            Item one = itemClient.getOne(id);
+            // 转换为文档类型
+            ItemDoc itemDoc = new ItemDoc(one);
+            // 1.准备请求参数
+            IndexResponse indexResponse = client.index(i -> i.index("item").document(itemDoc).id(id.toString()));
+//            UpdateRequest<String, ItemDoc> updateRequest = UpdateRequest.of(s -> s
+//                    .index("item")
+//                    .id(id.toString())
+//                    .doc(itemDoc));
+//            UpdateResponse<String> updateResponse = client.update(updateRequest, ItemDoc.class);
+            log.info("版本：{}",indexResponse.version());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    //删除
+    @Override
+    public void deleteById(Long id) {
+        try {
+            // 1.准备Request
+            // 2.发送请求
+            DeleteResponse deleteResponse = client.delete(i -> i.index("item").id(id.toString()));
+            Result result = deleteResponse.result();
+            System.out.println("Deleted".equals(result.toString())?"删除成功":"没有找到");
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -241,6 +276,7 @@ public class SearchServiceImpl implements SearchService {
                         field("category")
                         .size(20)));
     }
+
     //获取结果
     private List<String> getAggByName(Map<String, Aggregate> aggregations, String starAgg) {
         // 4.1.根据聚合名称获取聚合结果
@@ -254,6 +290,7 @@ public class SearchServiceImpl implements SearchService {
         });
         return brandList;
     }
+
     //处理响应结果
     private PageDTO<ItemDoc> handleResponse(SearchResponse response) {
         HitsMetadata<ItemDoc> searchHits = response.hits();

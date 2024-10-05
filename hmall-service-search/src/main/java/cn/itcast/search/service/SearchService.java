@@ -22,4 +22,8 @@ public interface SearchService {
     Map<String, List<String>> getFilters(SearchReqDTO params);
     //实现基本搜索功能
     PageDTO<ItemDoc> getList(SearchReqDTO params);
+    //商品新增或修改的业务
+    void insertById(Long id);
+    //商品删除的业务
+    void deleteById(Long id);
 }

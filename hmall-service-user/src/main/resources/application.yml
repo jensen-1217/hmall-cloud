@@ -2,15 +2,16 @@ server:
   port: 8082
 spring:
   datasource:
-    url: jdbc:mysql://192.168.200.130:3306/hmall?useSSL=false&characterEncoding=UTF-8
+    url: jdbc:mysql://192.168.93.132:3306/hmall?useSSL=false&characterEncoding=UTF-8
     username: root
     password: root
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   application:
     name: userservice
   cloud:
     nacos:
-      server-addr: 192.168.200.130:8848
+      discovery:
+        server-addr: 192.168.93.132:8848
 mybatis-plus:
   type-aliases-package: com.hmall.item.pojo
   configuration:

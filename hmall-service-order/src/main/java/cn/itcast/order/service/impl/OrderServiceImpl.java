@@ -46,7 +46,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public String addOrder(OrderReqDTO dto) {
         // 1. 远程查询对应商品信息
         Item one = itemClient.getOne(dto.getItemId());
+        //计算订单总价
         Long totalFee = one.getPrice() * dto.getNum();
+        //设置支付初始状态
         int status = 1;
         Order order = new Order();
         order.setStatus(status);

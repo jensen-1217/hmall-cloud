@@ -31,4 +31,12 @@ public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> impl
         addressQueryWrapper.eq("user_id",userId);
         return this.list(addressQueryWrapper);
     }
+    //根据addressId查询Address
+    @Override
+    public Address getAddressById(Long id) {
+        if (id==null){
+            return null;
+        }
+        return this.getById(id);
+    }
 }

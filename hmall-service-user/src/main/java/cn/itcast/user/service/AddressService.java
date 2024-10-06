@@ -14,5 +14,6 @@ import java.util.List;
 public interface AddressService extends IService<Address> {
     //根据用户id查询地址列表
     List<Address> getUID();
-
+    //根据addressId查询Address
+    Address getAddressById(Long id);
 }

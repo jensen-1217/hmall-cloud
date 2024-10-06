@@ -11,7 +11,7 @@ spring:
       routes:
         - id: itemservice # 路由id，自定义，只要唯一即可
           uri: lb://itemservice # 路由的目标地址 lb就是负载均衡，后面跟服务名称
-          predicates:  # 路由断言，也就是判断请求是否符合路由规则的条件
+          predicates: # 路由断言，也就是判断请求是否符合路由规则的条件
             - Path=/item/** # 这个是按照路径匹配，只要以/item/开头就符合要求
         - id: userservice # 路由id，自定义，只要唯一即可
           uri: lb://userservice # 路由的目标地址 lb就是负载均衡，后面跟服务名称
@@ -25,6 +25,8 @@ spring:
           uri: lb://searchservice
           predicates:
             - Path=/search/**
+      default-filters:
+        - AddRequestHeader=authorization, 2
       globalcors: # 全局的跨域处理
         add-to-simple-url-handler-mapping: true # 解决options请求被拦截问题
         cors-configurations:

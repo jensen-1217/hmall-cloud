@@ -4,13 +4,14 @@ spring:
   application:
     name: orderservice
   datasource:
-    url: jdbc:mysql://192.168.200.130:3306/hmall?useSSL=false&characterEncoding=UTF-8
+    url: jdbc:mysql://192.168.93.132:3306/hmall?useSSL=false&characterEncoding=UTF-8
     username: root
     password: root
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     nacos:
-      server-addr: 192.168.200.130:8848
+      discovery:
+        server-addr: 192.168.93.132:8848
 mybatis-plus:
   type-aliases-package: com.hmall.item.pojo
   configuration:
@@ -24,9 +25,22 @@ logging:
     cn.itcast.feign.client: debug
   pattern:
     dateformat: HH:mm:ss:SSS
-xxljob:
-  admin-address: http://192.168.200.130:8888/xxl-job-admin
-  executor-name: hmall-order-executor
-  executor-port: 9991
-  log-path: C:/xxljob/logs
+# XXJOB参数配置
+xxl:
+  job:
+    accessToken:
+    admin:
+      addresses: http://192.168.93.132:8093/xxl-job-admin
+    executor:
+      appname: hmall-order-executor
+      address:
+      ip:
+      port: 7878
+      logpath: .\logs
+      logretentiondays: 30
+#xxljob:
+#  admin-address: http://192.168.200.130:8888/xxl-job-admin
+#  executor-name: hmall-order-executor
+#  executor-port: 9991
+#  log-path: C:/xxljob/logs
   # executor-address: http://192.168.200.1:9991

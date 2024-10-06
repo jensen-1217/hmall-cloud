@@ -53,4 +53,7 @@ public interface ItemService extends IService<Item> {
      * @return
      */
     void deleteOne(Long id);
+
+    //减少库存
+    void stock(Long itemId, Integer num);
 }

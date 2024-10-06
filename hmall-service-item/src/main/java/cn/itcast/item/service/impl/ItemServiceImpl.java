@@ -111,4 +111,14 @@ public class ItemServiceImpl  extends ServiceImpl<ItemMapper, Item> implements I
     public void deleteOne(Long id) {
         this.removeById(id);
     }
+
+    //减少库存
+    @Override
+    public void stock(Long itemId, Integer num) {
+        if (itemId != null && num != null) {
+            UpdateWrapper<Item> itemUpdateWrapper = new UpdateWrapper<>();
+            itemUpdateWrapper.eq("id", itemId).setSql("stock=stock-" + num);
+            this.update(itemUpdateWrapper);
+        }
+    }
 }

@@ -2,21 +2,27 @@ package cn.itcast.order.service.impl;
 
 import cn.itcast.feign.client.ItemClient;
 import cn.itcast.feign.client.UserClient;
+import cn.itcast.hmall.dto.common.ResultDTO;
+import cn.itcast.hmall.dto.common.ThreadLocalUtil;
 import cn.itcast.hmall.dto.order.OrderReqDTO;
 import cn.itcast.hmall.pojo.item.Item;
 import cn.itcast.hmall.pojo.order.Order;
 import cn.itcast.hmall.pojo.order.OrderDetail;
 import cn.itcast.hmall.pojo.order.OrderLogistics;
 import cn.itcast.hmall.pojo.user.Address;
+import cn.itcast.hmall.pojo.user.User;
 import cn.itcast.order.mapper.OrderMapper;
 import cn.itcast.order.service.OrderDetailService;
 import cn.itcast.order.service.OrderLogisticService;
 import cn.itcast.order.service.OrderService;
+import com.alibaba.cloud.commons.lang.StringUtils;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.DigestUtils;
 
 /**
  * @author jensen
@@ -73,5 +79,30 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 4.调用商品服务扣减库存
         itemClient.stock(one.getId(), dto.getNum());
         return String.valueOf(order.getId());
+    }
+    //支付
+    @Transactional(propagation = Propagation.REQUIRED ,readOnly = false)
+    @Override
+    public ResultDTO pay(Long orderId, String password) {
+        if(orderId==null|| !StringUtils.isNotBlank(password)){
+            throw  new RuntimeException("出错");
+        }
+        Order order = this.getById(orderId);
+        if(order.getStatus()!=1){
+            throw new RuntimeException("支付状态有问题");
+        }
+        Long userId = ThreadLocalUtil.getUserId();
+        User user = userClient.getUser(userId);
+        ResultDTO resultDTO = new ResultDTO();
+        if(!user.getPassword().equals(DigestUtils.md5DigestAsHex(password.getBytes()))){
+            throw  new RuntimeException("密码错误");
+        }
+        userClient.pay(order.getTotalFee(),userId);
+        UpdateWrapper<Order> orderUpdateWrapper = new UpdateWrapper<>();
+        orderUpdateWrapper.eq("id",orderId).set("status",2);
+        boolean update = this.update(orderUpdateWrapper);
+        resultDTO.setSuccess(update);
+        resultDTO.setMsg("成功");
+        return resultDTO;
     }
 }
